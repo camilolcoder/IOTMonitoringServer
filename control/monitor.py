@@ -48,7 +48,7 @@ def analyze_data():
 
         if item["check_value"] > max_value or item["check_value"] < min_value:
             alert = True
-            send_signal = False
+            #send_signal = False
         
         if item["check_value"] < max_value or item['check_value'] > min_value:
             send_signal = True
