@@ -35,6 +35,7 @@ def analyze_data():
     alerts = 0
     for item in aggregation:
         alert = False
+        send_signal = False
 
         variable = item["measurement__name"]
         max_value = item["measurement__max_value"] or 0
@@ -47,6 +48,17 @@ def analyze_data():
 
         if item["check_value"] > max_value or item["check_value"] < min_value:
             alert = True
+            send_signal = False
+        
+        if item["check_value"] < max_value or item['check_value'] > min_value:
+            send_signal = True
+            alert = False
+
+        if send_signal:
+            message = "WORKING_FINE {} {} {}".format(variable, min_value, max_value)
+            topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
+            print(datetime.now(), "Sending alert to {} {}".format(topic, variable))
+            client.publish(topic, message)
 
         if alert:
             message = "ALERT {} {} {}".format(variable, min_value, max_value)
@@ -102,7 +114,7 @@ def setup_mqtt():
 
 def start_cron():
     '''
-    Inicia el cron que se encarga de ejecutar la función analyze_data cada 5 minutos.
+    Inicia el cron que se encarga de ejecutar la función analyze_data cada 1 minutos.
     '''
     print("Iniciando cron...")
     schedule.every(1).minutes.do(analyze_data)
